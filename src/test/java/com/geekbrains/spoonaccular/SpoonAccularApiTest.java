@@ -1,8 +1,11 @@
 package com.geekbrains.spoonaccular;
 
 import com.geekbrains.BaseTest;
+import com.geekbrains.clients.SpoonacularClient;
 import com.geekbrains.spoonaccular.model.RecipesSearchResponse;
 import com.geekbrains.spoonaccular.model.RecipesSearchResponseItem;
+import com.geekbrains.spoonaccular.model.SearchGroceryProductsRequest;
+import com.geekbrains.spoonaccular.model.SearchGroceryProductsResponse;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
@@ -22,8 +25,10 @@ import static org.hamcrest.Matchers.lessThan;
 
 public class SpoonAccularApiTest extends BaseTest {
 
-    private static final String API_KEY = "1a611870ed4240b8b098517f54bba756";
+    private static final String API_KEY = "253b8a2cc90d429f97fc3e66d625dd64";
     private static final String BASE_URL = "https://api.spoonacular.com";
+
+    private static SpoonacularClient client;
 
     @BeforeAll
     static void beforeAll() {
@@ -38,6 +43,8 @@ public class SpoonAccularApiTest extends BaseTest {
                 .expectStatusCode(200)
                 .expectResponseTime(lessThan(1000L))
                 .build();
+
+        client = new SpoonacularClient();
     }
 
     @Test
@@ -90,6 +97,28 @@ public class SpoonAccularApiTest extends BaseTest {
             Image image = ImageIO.read(new URL(item.getImage()));
             Assertions.assertNotNull(image);
         }
+
+    }
+
+    @Test
+    void testProductSearchGrocery() throws IOException {
+
+        SearchGroceryProductsResponse products = client.findAllProducts(
+                SearchGroceryProductsRequest.builder()
+                        .query("pasta")
+                        .minCalories(10L)
+                        .maxCalories(1000L)
+                        .number(3L)
+                        .build()
+        );
+
+        String expected = getResourceAsString("products.json");
+
+        JsonAssert.assertJsonEquals(
+                expected,
+                products,
+                JsonAssert.when(IGNORING_ARRAY_ORDER)
+        );
 
     }
 

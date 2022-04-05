@@ -1,0 +1,29 @@
+{
+  "type": "product",
+  "products": [
+    {
+      "id": 149349,
+      "title": "Barilla® Classic Blue Box Pasta Rigatoni 16 oz",
+      "image": "https://spoonacular.com/productImages/149349-312x231.jpeg",
+      "imageType": "jpeg"
+    },
+    {
+      "id": 82788,
+      "title": "Barilla® Classic Blue Box Pasta Mostaccioli 16 oz",
+      "image": "https://spoonacular.com/productImages/82788-312x231.jpeg",
+      "imageType": "jpeg"
+    },
+    {
+      "id": 163856,
+      "title": "Barilla® Classic Blue Box Pasta Large Shells 16 oz",
+      "image": "https://spoonacular.com/productImages/163856-312x231.jpeg",
+      "imageType": "jpeg"
+    }
+  ],
+  "offset": 0,
+  "number": 3,
+  "totalProducts": 2820,
+  "processingTimeMs": "${json-unit.ignore}",
+  "expires": "${json-unit.ignore}",
+  "isStale": false
+}
