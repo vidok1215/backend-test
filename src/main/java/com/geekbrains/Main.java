@@ -1,32 +1,56 @@
 package com.geekbrains;
 
-import com.geekbrains.clients.SpoonacularClient;
-import com.geekbrains.spoonaccular.model.AutoCompleteProductResponse;
-import com.geekbrains.spoonaccular.model.ProductView;
-import com.geekbrains.spoonaccular.model.SearchGroceryProductsRequest;
-import com.geekbrains.spoonaccular.model.SearchGroceryProductsResponse;
+import com.geekbrains.db.dao.ProductsMapper;
+import com.geekbrains.db.model.Products;
+import com.geekbrains.db.model.ProductsExample;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
+import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 public class Main {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, IOException {
 
-        SpoonacularClient client = new SpoonacularClient();
+        SqlSessionFactory sessionFactory = new SqlSessionFactoryBuilder()
+                .build(Resources.getResourceAsStream("myBatisConfig.xml"));
 
-        AutoCompleteProductResponse pasta = client.autocomplete("pasta", 3L);
+        SqlSession session = sessionFactory.openSession();
 
-        System.out.println(pasta);
+        ProductsMapper productsMapper = session.getMapper(ProductsMapper.class);
 
-        SearchGroceryProductsResponse products = client.findAllProducts(
-                SearchGroceryProductsRequest.builder()
-                        .query("pasta")
-                        .minCalories(10L)
-                        .maxCalories(1000L)
-                        .number(3L)
-                        .build()
-        );
+        Products product = productsMapper.selectByPrimaryKey(3L);
+        log.info("product: {}", product);
 
-        products.getProducts().forEach(System.out::println);
+        ProductsExample filter = new ProductsExample();
+
+        filter.createCriteria()
+                .andTitleGreaterThan("a")
+                .andTitleLessThan("h");
+
+        List<Products> products = productsMapper.selectByExample(filter);
+        products.forEach(p -> log.info("product: {}", p));
+
+        Products newProduct = new Products();
+        newProduct.setPrice(12);
+        newProduct.setTitle("New product");
+        newProduct.setCategoryId(1L);
+
+        productsMapper.insertSelective(newProduct);
+
+        filter.clear();
+        filter.createCriteria()
+                .andTitleEqualTo("New product");
+
+        List<Products> newProducts = productsMapper.selectByExample(filter);
+
+        newProducts.forEach(p -> log.info("product new: {}", p));
+
+        session.commit();
     }
 }

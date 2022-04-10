@@ -2,13 +2,11 @@ package com.geekbrains.spoonaccular;
 
 import com.geekbrains.BaseTest;
 import com.geekbrains.clients.SpoonacularClient;
-import com.geekbrains.spoonaccular.model.RecipesSearchResponse;
-import com.geekbrains.spoonaccular.model.RecipesSearchResponseItem;
-import com.geekbrains.spoonaccular.model.SearchGroceryProductsRequest;
-import com.geekbrains.spoonaccular.model.SearchGroceryProductsResponse;
+import com.geekbrains.spoonaccular.model.*;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.common.mapper.TypeRef;
 import net.javacrumbs.jsonunit.JsonAssert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -18,6 +16,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.Locale;
 
 import static net.javacrumbs.jsonunit.core.Option.IGNORING_ARRAY_ORDER;
@@ -25,7 +24,7 @@ import static org.hamcrest.Matchers.lessThan;
 
 public class SpoonAccularApiTest extends BaseTest {
 
-    private static final String API_KEY = "253b8a2cc90d429f97fc3e66d625dd64";
+    private static final String API_KEY = "0970f5c615f14a2a91942df5a213e41c";
     private static final String BASE_URL = "https://api.spoonacular.com";
 
     private static SpoonacularClient client;
@@ -97,7 +96,31 @@ public class SpoonAccularApiTest extends BaseTest {
             Image image = ImageIO.read(new URL(item.getImage()));
             Assertions.assertNotNull(image);
         }
+    }
 
+    @Test
+    void testReceiptAutoComplete() throws IOException {
+
+        List<AutoCompleteRecipeItem> actually = RestAssured.given()
+                .queryParam("query", "pizza")
+                .queryParam("number", 10)
+                .log()
+                .uri()
+                .expect()
+                .log()
+                .body()
+                .when()
+                .get("recipes/autocomplete")
+                .body()
+                .as(new TypeRef<>() {});
+
+        String expected = getResourceAsString("autocomplete/expected.json");
+
+        JsonAssert.assertJsonEquals(
+                expected,
+                actually,
+                JsonAssert.when(IGNORING_ARRAY_ORDER)
+        );
     }
 
     @Test
